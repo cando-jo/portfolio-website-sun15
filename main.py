@@ -1,7 +1,23 @@
 # Import
-from flask import Flask, render_template,request, redirect
-
+from flask import Flask, render_template, request, redirect
+from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///diary.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Veri tabanı oluşturma
+db = SQLAlchemy(app)
+# Tablo oluşturma
+
+class Kullanici_bilgileri(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    email = db.Column(db.String(200), nullable=False)
+    comment=db.Column(db.String(200), nullable=False)
+
+
+with app.app_context():
+    db.create_all()
 
 # İçerik sayfasını çalıştırma
 @app.route('/')
@@ -17,6 +33,11 @@ def process_form():
     comment = request.form['text']
     print("Email:", email)
     print("Comment:", comment)
+    kullanici = Kullanici_bilgileri(email=email, comment=comment)
+    
+    db.session.add(kullanici)
+    db.session.commit()
+    
     return render_template('index.html', button_python=button_python)
 
 
